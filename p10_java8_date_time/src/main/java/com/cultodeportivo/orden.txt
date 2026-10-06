@@ -1,0 +1,105 @@
+ORDEN - P10_JAVA8_DATE_TIME
+===========================================
+
+¿Por qué la nueva API?  java.util.Date y Calendar eran mutables, no thread-safe,
+con meses indexados en 0, y difíciles de formatear. java.time (JSR-310) lo resuelve.
+
+PRINCIPIO CLAVE: todas las clases son INMUTABLES y THREAD-SAFE.
+plus/minus/with SIEMPRE devuelven un nuevo objeto; el original no cambia.
+
+─────────────────────────────────────────
+JERARQUÍA DE CLASES:
+
+  LocalDate          → solo fecha         (2025-03-13)
+  LocalTime          → solo hora          (08:00:00)
+  LocalDateTime      → fecha + hora       (2025-03-13T08:00:00)    sin zona
+  ZonedDateTime      → fecha + hora + zona (2025-03-13T08:00-05:00[America/Guayaquil])
+  Period             → diferencia en años/meses/días  (entre LocalDates)
+  Duration           → diferencia en horas/min/seg    (entre instantes)
+  DateTimeFormatter  → formatear/parsear cualquier clase de la API
+─────────────────────────────────────────
+
+1. datetime/EjemploLocalDate.java
+   Creación:
+   - LocalDate.now()
+   - LocalDate.of(año, mes, día)       → mes: int o Month enum
+   - LocalDate.parse("yyyy-MM-dd")     → formato ISO por defecto
+
+   Extraer:
+   - getDayOfMonth(), getMonth(), getYear(), getDayOfYear()
+   - getDayOfWeek() → DayOfWeek enum → .getDisplayName(TextStyle, Locale)
+   - getMonth().getDisplayName(TextStyle.FULL, new Locale("es","ES"))
+
+   Aritmética:
+   - plusDays/Months/Years()           → suma
+   - minusDays/Months/Years()          → resta
+   - minus(n, ChronoUnit.MONTHS)       → alternativa con ChronoUnit
+   - withMonth(n) / withDayOfMonth(n)  → reemplazar campo
+
+   Comparar:
+   - isBefore(fecha) / isAfter(fecha) / isEqual(fecha)
+   - isLeapYear()
+
+2. datetime/EjemploLocalTime.java
+   Creación:
+   - LocalTime.now()
+   - LocalTime.of(hora, min)  /  of(hora, min, seg)
+   - LocalTime.parse("HH:mm:ss")
+
+   Aritmética: plusHours, plusMinutes, plus(n, ChronoUnit.HOURS)
+   Comparar:   isBefore, isAfter
+   Constantes: LocalTime.MIN, MAX, NOON, MIDNIGHT
+
+   Formato:
+   - DateTimeFormatter.ofPattern("hh:mm:ss a")  → 12h con AM/PM
+   - DateTimeFormatter.ofPattern("HH:mm")       → 24h
+
+3. datetime/EjemploLocalDateTime.java
+   - LocalDateTime.now() / of(año,mes,día,hora,min,seg) / parse("...T...")
+   - Combinación: LocalDateTime.of(LocalDate, LocalTime)
+   - Aritmética: plusDays, minusHours, withHour(n)...
+   - Formato: DateTimeFormatter.ISO_LOCAL_DATE_TIME
+              DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+              DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM...", Locale)
+
+4. datetime/EjemploPeriod.java
+   - Period.between(fechaInicio, fechaFin)   → años, meses, días
+   - getYears() / getMonths() / getDays()
+   - Crear: Period.ofDays(n), ofWeeks(n), ofMonths(n), ofYears(n), of(a,m,d)
+   - Aplicar: fecha.plus(period)
+   Casos de uso: calcular edad, duración de semestres
+
+5. datetime/EjemploDuration.java
+   - Duration.between(inicio, fin)           → en segundos/nanos
+   - toHours() / toMinutes() / toSeconds()
+   - toHoursPart() / toMinutesPart()         → solo la parte (Java 9+)
+   - Crear: Duration.ofHours(n), ofMinutes(n), ofSeconds(n)
+   - Aritmética: plus, minus, dividedBy, multipliedBy
+   - isNegative() / abs()
+   Diferencia Period vs Duration:
+     Period   → calendario (días variables, DST, bisiestos)
+     Duration → tiempo exacto (nanosegundos)
+
+6. datetime/EjemploZonedDateTime.java
+   - ZoneId.of("America/Guayaquil")          → Ecuador UTC-5
+   - fechaLocal.atZone(zoneId)               → LocalDateTime → ZonedDateTime
+   - zdtOrigen.withZoneSameInstant(otraZona) → convertir zona (mismo instante)
+   - withZoneSameLocal(otraZona)             → misma hora "local" diferente zona
+   - ZoneId.getAvailableZoneIds()            → todas las zonas disponibles
+   - ZoneOffset.of("-05:00")                 → offset fijo, sin reglas DST
+   Diferencia ZoneId vs ZoneOffset:
+     ZoneId     → tiene reglas DST (verano/invierno)
+     ZoneOffset → offset fijo, más simple pero sin DST
+
+===========================================
+CHEAT SHEET DE FORMATEO:
+   yyyy  → año 4 dígitos       MM → mes 2 dígitos     dd → día 2 dígitos
+   HH    → hora 24h (00-23)    hh → hora 12h (01-12)  mm → minutos  ss → segundos
+   a     → AM/PM               EEEE → nombre día       MMMM → nombre mes
+   z     → zona (EST, ECT)     Z → offset (+0500)      'texto' → literal
+
+EXTRA recomendado:
+   - Instant          → timestamp UTC exacto (para logs, APIs)
+   - TemporalAdjusters→ "próximo lunes", "último día del mes"
+     ej: fecha.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY))
+   - DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG) → formato locale del SO

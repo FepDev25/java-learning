@@ -1,0 +1,66 @@
+ORDEN - P07_JAVA8_LAMBDA
+===========================================
+
+1. modelo/
+   - Estudiante.java              Clase POJO usada en todos los ejemplos
+
+2. interfacefuncional/            ← Qué es una lambda y cómo se declara
+   - Operacion.java               @FunctionalInterface propia
+   - Calculadora.java             Acepta la interfaz + BiFunction del JDK
+   - EjemploInterfaceFuncional.java  Lambda variable, lambda inline, method ref
+
+   Conceptos:
+   - @FunctionalInterface = exactamente 1 método abstracto
+   - Una lambda implementa esa interfaz en el acto, sin clase anónima
+   - Sintaxis: (params) -> expresión  |  (params) -> { bloque; }
+   - Sin parámetros: () -> expresión
+   - Un parámetro: param -> expresión  (paréntesis opcionales)
+   - Captura de variables externas: deben ser effectively final
+
+3. consumer/                      ← Consumir valores sin retornar
+   - EjemploConsumer.java         Consumer, BiConsumer, Supplier + method ref
+
+   Conceptos:
+   - Consumer<T>     accept(T)           → sin retorno
+   - BiConsumer<T,U> accept(T, U)        → sin retorno
+   - Supplier<T>     get()               → sin parámetro, retorna T
+   - list.forEach(consumer)             → aplica consumer a cada elemento
+   - Referencia de método: instancia::metodo, Clase::new
+
+4. function/                      ← Transformar valores
+   - EjemploFunction.java         Function, BiFunction, andThen, compose
+
+   Conceptos:
+   - Function<T,R>       apply(T)        → T → R
+   - BiFunction<T,U,R>   apply(T,U)      → (T,U) → R
+   - f1.andThen(f2)      → f2(f1(x))    (composición derecha)
+   - f1.compose(f2)      → f1(f2(x))    (composición izquierda)
+   - Function.identity() → devuelve el mismo objeto sin transformar
+
+5. predicate/                     ← Evaluar condiciones booleanas
+   - EjemploPredicado.java        Predicate, BiPredicate, and/or/negate
+
+   Conceptos:
+   - Predicate<T>        test(T)         → boolean
+   - BiPredicate<T,U>    test(T,U)       → boolean
+   - p1.and(p2)          → p1 && p2
+   - p1.or(p2)           → p1 || p2
+   - p1.negate()         → !p1
+   - Predicate.not(p)    → equivale a negate() (Java 11+)
+
+6. referenciametodos/             ← Azúcar sintáctico para lambdas
+   - EjemploReferenciaMetodos.java  Las 4 formas de method reference
+
+   Conceptos:
+   - Clase::metodoEstatico        → (a,b) -> Clase.metodo(a,b)
+   - instancia::metodo            → (a)   -> obj.metodo(a)
+   - Clase::metodoInstancia       → (obj) -> obj.metodo()
+   - Clase::new                   → ()   -> new Clase()
+   - Comparator.comparingDouble(Clase::getter).reversed()
+
+===========================================
+EXTRA (interfaces funcionales adicionales del JDK):
+   - UnaryOperator<T>  extends Function<T,T>   → (T) → T  (ej: String::trim)
+   - BinaryOperator<T> extends BiFunction<T,T,T>→ reduce, combinar
+   - IntFunction, LongFunction, ToIntFunction   → versiones primitivas (sin boxing)
+   - Runnable / Callable                        → ya vista en p06_hilos

@@ -1,0 +1,106 @@
+ORDEN - P13_PATRONES_DISENO
+===========================================
+
+Los patrones de diseño son soluciones reutilizables a problemas recurrentes.
+Categorías GoF (Gang of Four):
+  Creacionales → cómo se crean objetos   (Singleton, Factory)
+  Estructurales → cómo se componen       (Decorator, Composite)
+  De comportamiento → cómo se comunican  (Observer)
+
+─────────────────────────────────────────
+
+1. singleton/                              ← Creacional
+   Archivos: ConfiguracionApp.java, EjemploSingleton.java
+
+   Propósito: una sola instancia en toda la aplicación.
+   Estructura:
+   - constructor PRIVATE
+   - campo static volatile instancia
+   - método static getInstancia()
+
+   Implementaciones:
+   ┌──────────────────────┬───────────────────────────────────────┐
+   │ Lazy (clásica)       │ if(null) new ... — no thread-safe     │
+   │ Double-checked lock  │ volatile + synchronized(class) — OK  │
+   │ Enum Singleton       │ JVM garantiza unicidad — más robusto  │
+   │ Holder estático      │ clase interna — lazy + thread-safe    │
+   └──────────────────────┴───────────────────────────────────────┘
+   Usos reales: conexiones a BD, Logger, ConfiguracionApp, Cache
+
+2. factory/                                ← Creacional
+   Archivos: Notificacion (abstract), Email/SMS/PushFactory, EjemploFactory
+
+   Propósito: delegar la creación de objetos a subclases.
+   El cliente habla con NotificacionFactory (abstracción), no con Email/SMS/Push.
+   Estructura:
+   - Producto abstracto: Notificacion (preparar, enviar, getTipo)
+   - Productos concretos: NotificacionEmail, SMS, Push
+   - Factory abstracta: NotificacionFactory (enviarNotificacion + factory method)
+   - Factories concretas: EmailFactory, SmsFactory, PushFactory
+
+   Template Method interno:
+     enviarNotificacion() → crearNotificacion() → preparar() → enviar()
+     El orden es fijo; la implementación de cada paso varía.
+
+   OCP (Open/Closed Principle): agregar WhatsApp = nueva clase, nada cambia.
+
+3. observer/                               ← Comportamiento
+   Archivos: Observable, Observador, SistemaNotas, EjemploObserver
+
+   Propósito: notificar automáticamente a N suscriptores cuando cambia un sujeto.
+   También llamado: pub/sub, event listener.
+   Estructura:
+   - Observable (abstract): lista de Observadores + notificarObservadores()
+   - Observador (@FunctionalInterface): actualizar(observable, dato)
+   - SistemaNotas (extends Observable): publica eventos al cambiar notas
+   - Observadores (lambda): app, email, log, alerta académica
+
+   Claves:
+   - El sujeto NO conoce la implementación de sus observadores (bajo acoplamiento)
+   - Observador es @FunctionalInterface → se puede usar lambda directamente
+   - Para poder remover: guardar la referencia en variable, no lambda anónima
+   Usos reales: event bus, listeners de UI, notificaciones, Spring @EventListener
+
+4. decorator/                              ← Estructural
+   Archivos: Formateador, TextoSimple, TextoDecorador (abstract),
+             decorador/MayusculaDecorador, InvertirDecorador,
+             ReemplazarEspaciosDecorador, CorcheteDecorador, EjemploDecorador
+
+   Propósito: agregar comportamiento a un objeto envolviéndolo, sin heredar.
+   "Wrapper" en capas → cada capa añade una transformación.
+   Estructura:
+   - Componente: Formateador (interfaz/abstract)
+   - Concreto: TextoSimple
+   - Decorador abstracto: TextoDecorador (tiene un Formateador)
+   - Decoradores concretos: sobrescriben formatear() aplicando su lógica sobre texto.formatear()
+
+   Clave: todos implementan Formateador → pueden anidarse infinitamente
+   Orden importa:  mayúscula(invertir(base))  ≠  invertir(mayúscula(base))
+   Usos reales: java.io streams, loggers con prefijos, Spring Security filters
+
+5. composite/                              ← Estructural
+   Archivos: Componente (abstract), Archivo (hoja), Directorio (rama), EjemploComposite
+
+   Propósito: tratar objetos individuales y colecciones de forma uniforme.
+   Estructura:
+   - Componente abstracto: nombre, mostrar(nivel), buscar(nombre)
+   - Hoja (Archivo):     no tiene hijos; mostrar() retorna el nombre
+   - Rama (Directorio):  tiene List<Componente>; mostrar() y buscar() delegan a hijos
+   - add() retorna this → encadenamiento fluent
+
+   Clave: el cliente llama repo.buscar("x") sin saber si busca en Archivo o Directorio.
+   Usos reales: sistemas de archivos, menús anidados, árbol DOM, organigramas
+
+===========================================
+PRINCIPIOS SOLID aplicados:
+  S (SRP)  → cada clase tiene una sola responsabilidad
+  O (OCP)  → Factory: abierto a extensión, cerrado a modificación
+  L (LSP)  → Composite: Archivo y Directorio sustituibles donde se use Componente
+  I (ISP)  → Observador tiene solo un método
+  D (DIP)  → EjemploFactory depende de NotificacionFactory (abstracción), no de Email/SMS
+
+EXTRA (patrones no cubiertos, recomendados para CS):
+  Builder   → construir objetos complejos paso a paso (ej: Estudiante.builder().nombre().build())
+  Strategy  → intercambiar algoritmos en runtime (ej: distintos algoritmos de ordenamiento)
+  Command   → encapsular una acción como objeto (ej: deshacer/rehacer en editores)
+  Template Method → esqueleto de algoritmo en superclase, pasos variables en subclases

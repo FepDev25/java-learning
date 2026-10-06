@@ -1,0 +1,65 @@
+ORDEN - P09_OPTIONAL
+===========================================
+
+Modelos usados:
+   - modelo/Materia.java    (nombre, nota, Optional<String> descripcion, Optional<Docente> docente)
+   - modelo/Docente.java    (nombre, Optional<String> departamento)
+   Nota: los getters retornan Optional directamente → patrón idiomático Java 8+
+
+Repositorio:
+   - repositorio/Repositorio.java          Interface genérica
+   - repositorio/MateriaRepositorio.java   Implementación con datos en memoria
+
+─────────────────────────────────────────
+PROBLEMA que resuelve Optional:
+   Antes Java 8:  if (obj != null && obj.getX() != null && obj.getX().getY() != null) { ... }
+   Con Optional:  repo.buscar("x").flatMap(o::getX).flatMap(x::getY).orElse("default")
+   → Más legible, sin NPE, sin ifs anidados.
+─────────────────────────────────────────
+
+1. optional/EjemploOptional.java       ← Crear y consultar un Optional
+   Creación:
+   - Optional.of(valor)            → NPE si valor es null
+   - Optional.ofNullable(valor)    → empty() si valor es null  ← usar siempre en getters
+   - Optional.empty()              → vacío explícito
+
+   Consultar:
+   - isPresent()                   → boolean (hay valor)
+   - isEmpty()                     → boolean (vacío) — Java 11+
+   - get()                         → T  ← solo tras isPresent(), o preferir métodos funcionales
+
+   Consumir (preferido sobre get):
+   - ifPresent(Consumer)           → ejecuta si hay valor
+   - ifPresentOrElse(Consumer, Runnable) → Java 9+
+
+2. optional/EjemploOrElse.java         ← Extraer valor con fallback
+   - orElse(T)            → devuelve T de default; argumento SIEMPRE evaluado
+   - orElseGet(Supplier)  → lazy: Supplier evaluado SOLO si vacío ← preferir para objetos costosos
+   - orElseThrow()        → NoSuchElementException si vacío (Java 10+)
+   - orElseThrow(Supplier)→ excepción personalizada si vacío
+
+   Regla práctica:
+     orElse("literal")        → OK para valores baratos/constantes
+     orElseGet(() -> costoso) → usar cuando crear el default tiene costo
+
+3. optional/EjemploMapFilter.java      ← Operar dentro del Optional
+   - map(Function<T,R>)     → transforma T→R; devuelve Optional<R>
+   - filter(Predicate<T>)   → vacía el Optional si no cumple
+   - flatMap(Function<T, Optional<R>>) → encadena Optional anidados
+     ↳ usar cuando el getter ya devuelve Optional<X> (evita Optional<Optional<X>>)
+
+   Patrón "Optional chaining" (como null-safe navigation):
+     repo.buscar("x")
+         .flatMap(Obj::getOptionalA)
+         .flatMap(A::getOptionalB)
+         .map(B::getValor)
+         .orElse("default");
+
+===========================================
+EXTRA:
+   - stream() (Java 9+): convierte Optional<T> en Stream<T> de 0 o 1 elemento
+     → útil para combinar con Stream flatMap:
+       list.stream().flatMap(o -> o.buscar().stream()).collect(...)
+   - or(Supplier<Optional<T>>) (Java 9+): fallback que devuelve otro Optional
+   - NUNCA retornar null de un método que devuelve Optional
+   - NUNCA usar Optional como campo de una entidad/atributo de clase → solo en retornos

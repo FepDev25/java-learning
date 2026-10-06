@@ -1,0 +1,58 @@
+ORDEN - P01_BASICOS
+===========================================
+
+1. fundamentos/
+   - Tipos de datos primitivos
+   - Variables y constantes
+   - Sintaxis básica de Java
+
+2. operadores/
+   - Operadores aritméticos
+   - Operadores de asignación
+   - Operadores relacionales y lógicos
+
+3. strings/
+   - Manejo de cadenas de texto
+   - Métodos principales de String
+   - StringBuilder y StringBuffer
+
+4. condicionales/
+   - If-else
+   - Switch
+   - Operador ternario
+
+5. bucles/
+   - For, while, do-while
+   - Break y continue
+   - Bucles anidados
+
+6. wrapperautoboxing/
+   - Clases wrapper (Integer, Double, etc.)
+   - Autoboxing y unboxing
+   - Conversiones de tipos
+
+7. entradasalida/
+   - Scanner
+   - Entrada de datos por consola
+   - Formateo de salida
+
+8. operadorinstanceof/
+   - Verificación de tipos
+   - Uso de instanceof
+
+9. pasovalorreferencia/
+   - Diferencia entre valor y referencia
+   - Comportamiento de variables primitivas vs objetos
+
+10. utildate/
+    - Manejo básico de fechas
+    - Clase Date (legacy)
+
+11. entornosistema/
+    - Variables de entorno
+    - Propiedades del sistema
+    - Información de la JVM
+
+12. adicionales/
+    - Temas complementarios
+    - Ejercicios extra

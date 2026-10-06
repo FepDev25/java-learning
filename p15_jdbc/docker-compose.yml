@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jdbc_postgres
+    environment:
+      POSTGRES_DB:       notas_db
+      POSTGRES_USER:     felipe
+      POSTGRES_PASSWORD: ecuador2024
+    ports:
+      - "5435:5432"        # host:5435 → container:5432 (5432-5434 en uso)
+    volumes:
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - jdbc_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felipe -d notas_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  jdbc_data:

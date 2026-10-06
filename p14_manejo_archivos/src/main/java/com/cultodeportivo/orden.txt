@@ -1,0 +1,192 @@
+ORDEN - P14_MANEJO_ARCHIVOS
+===========================================
+
+Java I/O — tres capas de abstracción:
+  java.io (clásico)   → FileWriter/Reader, InputStream/OutputStream, Serializable
+  java.nio.file (NIO.2, Java 7+) → Path, Files — API moderna y recomendada
+  java.util.Properties → configuración clave=valor
+
+Regla de oro: siempre usar try-with-resources → cierra streams automáticamente.
+
+─────────────────────────────────────────
+
+1. archivos/EjemploFile.java                    ← java.io.File (clásico)
+
+   Propósito: representar y manipular rutas en el sistema de archivos.
+   Nota: File NO abre el archivo, solo guarda la ruta.
+
+   Métodos clave:
+   ┌──────────────────────┬─────────────────────────────────────────────┐
+   │ exists()             │ ¿la ruta existe?                            │
+   │ isFile() / isDir()   │ tipo                                        │
+   │ createNewFile()      │ crea archivo vacío; false si ya existe      │
+   │ mkdir()              │ un nivel; mkdirs() → anidados               │
+   │ list() / listFiles() │ contenido de directorio                     │
+   │ listFiles(filter)    │ filtro por nombre o tipo                    │
+   │ renameTo(File)       │ mover o renombrar                           │
+   │ delete()             │ eliminar (solo dirs vacíos)                 │
+   │ length()             │ tamaño en bytes                             │
+   └──────────────────────┴─────────────────────────────────────────────┘
+
+   Limitación: eliminar árbol requiere recursión manual (ver eliminarRecursivo).
+
+─────────────────────────────────────────
+
+2. archivos/EjemploEscritura.java               ← Escribir texto
+
+   ┌──────────────────────────┬──────────────────────────────────────────┐
+   │ FileWriter + BufferedWr. │ java.io; buffer → menos I/O al disco     │
+   │ new FileWriter(path, true)│ modo APPEND                             │
+   │ PrintWriter              │ println / printf convenientes            │
+   │ Files.writeString()      │ NIO.2 (Java 11+); más limpio            │
+   │ Files.write(List<String>)│ NIO.2; una línea por elemento            │
+   └──────────────────────────┴──────────────────────────────────────────┘
+
+   Siempre especificar StandardCharsets.UTF_8 → portable.
+
+─────────────────────────────────────────
+
+3. archivos/EjemploLectura.java                 ← Leer texto
+
+   ┌──────────────────────────┬──────────────────────────────────────────┐
+   │ BufferedReader.readLine()│ línea a línea; null = fin de archivo     │
+   │ Scanner + useDelimiter() │ tokenización; útil para CSV              │
+   │ Files.readAllLines()     │ NIO.2; todo en List<String>; carga total │
+   │ Files.readString()       │ NIO.2; todo en String (Java 11+)         │
+   │ Files.lines()            │ NIO.2; Stream<String> lazy → RAM mínima  │
+   └──────────────────────────┴──────────────────────────────────────────┘
+
+   Para archivos GRANDES → usar Files.lines() (stream lazy, no carga todo).
+
+─────────────────────────────────────────
+
+4. archivos/EjemploBytesStream.java             ← Streams de bytes
+
+   Propósito: copiar/transferir datos binarios (imágenes, PDFs, .class).
+   Para TEXTO usa streams de caracteres (FileWriter/Reader) o NIO.2.
+
+   ┌──────────────────────────┬──────────────────────────────────────────┐
+   │ Byte a byte              │ read() devuelve int (0-255) o -1 (EOF)   │
+   │ Con byte[] buffer        │ read(buf) → más eficiente                │
+   │ BufferedInputStream/Ostr.│ buffer automático; uso transparente      │
+   │ Files.copy()             │ NIO.2; lo más directo                    │
+   └──────────────────────────┴──────────────────────────────────────────┘
+
+   Recomendado para binarios: Files.copy(src, dst, REPLACE_EXISTING).
+
+─────────────────────────────────────────
+
+5. archivos/EjemploNIO.java                     ← NIO.2: Path + Files
+
+   Ventajas de NIO.2 sobre java.io.File:
+   - Excepciones detalladas (no boolean mudo)
+   - Operaciones atómicas (REPLACE_EXISTING, ATOMIC_MOVE)
+   - BasicFileAttributes: tamaño, fechas, tipo
+   - Soporte multiplataforma nativo con Path.of()
+
+   Path:
+     Path.of(TMP, "cs", "apunte.txt")  ← multiplataforma
+     p.getFileName() / getParent() / getRoot() / getNameCount()
+     p.subpath(desde, hasta)
+     p.toAbsolutePath()
+
+   Files (métodos estáticos):
+   ┌──────────────────────────┬──────────────────────────────────────────┐
+   │ createDirectories(path)  │ crea todos los niveles (mkdirs)          │
+   │ writeString(path, str)   │ escribe String (Java 11+)                │
+   │ write(path, List<String>)│ escribe líneas                           │
+   │ readString(path)         │ lee todo como String                     │
+   │ readAllLines(path)       │ lee todo como List<String>               │
+   │ copy(src, dst, opts)     │ copia; REPLACE_EXISTING para sobreescr.  │
+   │ move(src, dst, opts)     │ mueve/renombra                           │
+   │ delete(path)             │ lanza excepción si no existe             │
+   │ deleteIfExists(path)     │ no lanza excepción si no existe          │
+   │ exists(path)             │ booleano                                 │
+   │ size(path)               │ tamaño en bytes                          │
+   │ readAttributes()         │ BasicFileAttributes (fechas, tipo, etc.) │
+   └──────────────────────────┴──────────────────────────────────────────┘
+
+   StandardOpenOption: APPEND, TRUNCATE_EXISTING, CREATE, CREATE_NEW, SYNC
+   StandardCopyOption: REPLACE_EXISTING, COPY_ATTRIBUTES, ATOMIC_MOVE
+
+─────────────────────────────────────────
+
+6. archivos/EjemploNIOWalk.java                 ← Recorrer directorios
+
+   Files.walk(base)                      → Stream<Path> preorden
+   Files.walk(base, maxDepth)            → limita profundidad
+   Files.find(base, depth, BiPredicate)  → con filtro sobre atributos
+
+   Patrones comunes:
+     Listar todo:  Files.walk(base).forEach(...)
+     Solo .java:   .filter(p -> p.toString().endsWith(".java"))
+     Tamaño total: .filter(isRegularFile).mapToLong(size).sum()
+     Borrar árbol: .sorted(reverseOrder()).forEach(Files::delete)
+
+─────────────────────────────────────────
+
+7. serializacion/EjemploSerializacion.java      ← Serializar objetos
+
+   Propósito: objeto Java → bytes → disco (o red) → objeto Java.
+
+   Requisitos:
+   - La clase implementa Serializable (marker interface)
+   - Declarar serialVersionUID = 1L (evita InvalidClassException)
+   - Campos transient → NO se serializan (contraseñas, caches)
+
+   ┌──────────────────────────┬──────────────────────────────────────────┐
+   │ ObjectOutputStream       │ writeObject(obj) → serializa             │
+   │ ObjectInputStream        │ readObject() → deserializa (cast manual) │
+   │ transient                │ campo excluido de la serialización       │
+   │ @Serial                  │ anotación desde Java 14, marca UID       │
+   └──────────────────────────┴──────────────────────────────────────────┘
+
+   Flujo:
+     new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(path)))
+       .writeObject(obj)
+     ↓
+     new ObjectInputStream(new BufferedInputStream(new FileInputStream(path)))
+       .readObject()  → cast → Objeto
+
+   Alternativas modernas: Jackson (JSON), Gson, Protocol Buffers, Kryo.
+
+─────────────────────────────────────────
+
+8. properties/EjemploProperties.java            ← Configuración clave=valor
+
+   Formato:
+     app.nombre=GestorNotas
+     # comentario
+     db.host=localhost
+
+   ┌──────────────────────────┬──────────────────────────────────────────┐
+   │ setProperty(k, v)        │ añadir/actualizar                        │
+   │ getProperty(k)           │ obtener; null si no existe               │
+   │ getProperty(k, default)  │ con valor por defecto                    │
+   │ store(writer, comment)   │ guardar en disco                         │
+   │ load(reader)             │ cargar desde disco                       │
+   │ stringPropertyNames()    │ Set<String> de todas las claves          │
+   │ System.getProperties()   │ propiedades de la JVM                    │
+   └──────────────────────────┴──────────────────────────────────────────┘
+
+   En Maven: src/main/resources/config.properties
+   Cargar: getClass().getResourceAsStream("/config.properties")
+
+===========================================
+RESUMEN: ¿Qué usar?
+
+  Escritura texto  → Files.writeString() / Files.write(List)  [NIO.2]
+  Lectura texto    → Files.readAllLines() / Files.lines()     [NIO.2]
+  Copia binarios   → Files.copy()                             [NIO.2]
+  Recorrer dirs    → Files.walk() / Files.find()              [NIO.2]
+  Objetos a disco  → ObjectOutputStream + Serializable        [java.io]
+  Configuración    → Properties                               [java.util]
+  Texto grande     → Files.lines() (stream lazy)
+  Texto pequeño    → Files.readString()
+
+EXTRA (no cubierto, recomendado):
+  RandomAccessFile  → leer/escribir en posición arbitraria (seek)
+  FileChannel + ByteBuffer → NIO de alto rendimiento (servidores)
+  WatchService      → monitorear cambios en un directorio en tiempo real
+  ZipOutputStream   → crear archivos .zip directamente desde Java
+  Jackson/Gson      → serialización JSON (alternativa moderna a Serializable)

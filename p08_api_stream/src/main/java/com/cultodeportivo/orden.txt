@@ -1,0 +1,97 @@
+ORDEN - P08_API_STREAM
+===========================================
+
+Modelos usados en todos los ejemplos:
+   - modelo/Curso.java        (nombre, creditos, nota)
+   - modelo/Estudiante.java   (nombre, apellido, edad, pais, List<Curso>)
+
+─────────────────────────────────────────
+CONCEPTO CLAVE antes de empezar:
+   Stream ≠ colección. No almacena datos, los procesa en pipeline.
+   Operaciones INTERMEDIAS (lazy): map, filter, flatMap, distinct,
+                                    sorted, limit, skip, peek
+   Operaciones TERMINALES (eager):  forEach, collect, count, reduce,
+                                    findFirst, findAny, anyMatch, min, max
+   Una vez consumido, el Stream NO puede reutilizarse → IllegalStateException.
+─────────────────────────────────────────
+
+1. stream/EjemploCrearStream.java       ← 4 formas de crear un Stream
+   Formas:
+   - Stream.of(elem1, elem2, ...)
+   - Arrays.stream(array)
+   - Stream.builder().add().build()
+   - collection.stream()
+
+2. stream/EjemploStreamMap.java         ← Transformar: T → R
+   Conceptos:
+   - map(Function<T,R>)    → cada T se convierte en R
+   - peek(Consumer<T>)     → observar sin modificar (debug)
+   - collect(Collectors.toList())
+
+3. stream/EjemploStreamFilter.java      ← Filtrar elementos
+   Conceptos:
+   - filter(Predicate<T>)  → mantiene solo los que pasan
+   - count()               → terminal, devuelve long
+   - findFirst()           → Optional<T>, el primero que pasa
+   - findAny()             → Optional<T>, cualquiera (paralelo)
+   - anyMatch / allMatch / noneMatch → boolean
+
+4. stream/EjemploStreamFlatMap.java     ← Aplanar colecciones anidadas
+   Conceptos:
+   - flatMap(Function<T, Stream<R>>) → aplana Stream<Stream<R>> → Stream<R>
+   - Diferencia con map: map da Stream<List<X>>, flatMap da Stream<X>
+   - flatMap como filter alternativo: Stream.of(x) o Stream.empty()
+
+5. stream/EjemploStreamDistinct.java    ← Eliminar duplicados
+   Conceptos:
+   - distinct()  → usa equals() + hashCode() del objeto
+   - Para objetos propios: OBLIGATORIO hacer @Override de ambos
+
+6. stream/EjemploStreamReduce.java      ← Combinar en un único valor
+   Conceptos:
+   - reduce(identity, BinaryOperator)         → T
+   - reduce(BinaryOperator)                   → Optional<T>
+   - reduce(identity, BiFunction, BinaryOperator) → combinar tipos distintos
+   - Ejemplos: suma de créditos, concatenación, promedio ponderado
+
+7. stream/EjemploStreamEstadisticas.java ← IntStream y estadísticas
+   Conceptos:
+   - mapToInt(ToIntFunction)  → Stream<T> → IntStream (sin boxing)
+   - summaryStatistics()      → sum, max, min, avg, count en una pasada
+   - IntStream.range(a,b)     → [a, b)
+   - IntStream.rangeClosed(a,b) → [a, b]
+   - .sum(), .min(), .max(), .average() directamente en IntStream
+
+8. stream/EjemploStreamSortedLimit.java  ← Ordenar y paginar (EXTRA)
+   Conceptos:
+   - sorted(Comparator)       → orden natural o con lambda
+   - Comparator.comparingDouble(getter).reversed()
+   - limit(n)                 → primeros n elementos
+   - skip(n)                  → salta n elementos (paginación: skip + limit)
+   - min(Comparator) / max(Comparator) → Optional<T>
+
+9. stream/EjemploStreamCollectors.java   ← Acumular resultados (EXTRA)
+   Conceptos:
+   - Collectors.toList()      → List<T>
+   - Collectors.toSet()       → Set<T>
+   - Collectors.toMap(keyFn, valueFn)     → Map<K,V>
+   - Collectors.joining(sep, prefix, suffix) → String
+   - Collectors.groupingBy(classifier)    → Map<K, List<T>>
+   - Collectors.groupingBy + counting()   → Map<K, Long>
+
+10. stream/EjemploStreamParallel.java   ← Procesamiento en paralelo (EXTRA)
+    Conceptos:
+    - .parallel() → divide en sub-streams usando ForkJoinPool
+    - findAny() preferido sobre findFirst() en paralelo
+    - El orden de procesamiento NO está garantizado
+    - No usar lambdas con efectos secundarios en streams paralelos
+    - Útil cuando las operaciones son costosas e independientes
+
+===========================================
+FLUJO DE UN PIPELINE TÍPICO:
+   coleccion.stream()          ← crear
+       .filter(predicate)      ← intermedias (lazy)
+       .map(function)
+       .sorted(comparator)
+       .limit(n)
+       .collect(Collectors.toList());  ← terminal (dispara la evaluación)

@@ -1,0 +1,83 @@
+ORDEN - P06_HILOS
+===========================================
+
+1. hilos/                          ← Crear hilos (las 3 formas)
+   - threads/TareaFelipe.java        Clase que extiende Thread
+   - runnable/TareaEstudio.java      Clase que implementa Runnable
+   - EjemploExtenderThread.java      Forma 1: extends Thread + join()
+   - EjemploRunnable.java            Forma 2: Thread(new Runnable) + join()
+   - EjemploRunnableLambda.java      Forma 3 (Java 8+): lambda Runnable + join()
+
+   Conceptos:
+   - Thread.start() vs run()
+   - Thread.sleep(ms)
+   - thread.join()  → main espera a que el hilo termine
+   - thread.getState() → NEW / RUNNABLE / TIMED_WAITING / TERMINATED
+   - Thread.currentThread().getName()
+
+
+2. sincronizacion/                 ← synchronized, race condition
+   - runnable/ImprimirApunte.java    Runnable que llama al método sync
+   - EjemploSincronizacion.java      Método synchronized static
+
+   Conceptos:
+   - Sin synchronized: las líneas de distintos hilos se intercalan (race condition)
+   - synchronized en método → solo 1 hilo a la vez adquiere el monitor
+   - Monitor de clase (static) vs monitor de instancia
+
+
+3. productorconsumidor/            ← wait() / notify()
+   - ColaApuntes.java               Monitor compartido (objeto sincronizado)
+   - runnable/Escritor.java         Productor: escribe apuntes
+   - runnable/Lector.java           Consumidor: lee apuntes
+   - EjemploProductorConsumidor.java  main
+
+   Conceptos:
+   - wait()   → libera el lock y suspende el hilo en espera
+   - notify() → despierta UN hilo en espera en el mismo monitor
+   - notifyAll() → despierta TODOS los hilos en espera
+   - while(!condicion) { wait(); }  → siempre en while, no en if
+
+
+4. timer/                          ← Timer / TimerTask (API legacy)
+   - EjemploTimer.java              Una sola ejecución con delay
+   - EjemploTimerPeriodo.java       Ejecución repetida con periodo
+
+   Conceptos:
+   - new Timer() crea un hilo daemon en background
+   - timer.schedule(task, delayMs)
+   - timer.scheduleAtFixedRate(task, delayMs, periodoMs)
+   - timer.cancel() → detiene el hilo del Timer
+   - Nota: preferir ScheduledExecutorService para código nuevo
+
+
+5. executors/                      ← ExecutorService (API moderna)
+   - EjemploExecutorService.java          newSingleThreadExecutor
+   - EjemploFixedThreadPool.java          newFixedThreadPool + Callable + Future
+   - EjemploScheduledExecutor.java        newScheduledThreadPool (reemplaza Timer)
+   - EjemploExecutorProductorConsumidor.java  Productor-Consumidor con pool
+
+   Conceptos:
+   - ExecutorService: abstracción sobre pool de hilos
+   - Runnable  → void, no retorna valor
+   - Callable<T> → retorna T, puede lanzar excepciones checked
+   - Future<T>  → resultado asíncrono: isDone(), get(), cancel()
+   - executor.shutdown()          → acepta tareas enviadas, no nuevas
+   - executor.shutdownNow()       → intenta cancelar tareas en curso
+   - executor.awaitTermination()  → bloquea hasta que todo termine o timeout
+   - ScheduledFuture.cancel(false) → cancela sin interrumpir si está corriendo
+   - ThreadPoolExecutor.getPoolSize() / getQueue().size()
+
+   Tipos de pool:
+   - newSingleThreadExecutor()    → 1 hilo, cola FIFO
+   - newFixedThreadPool(n)        → n hilos fijos
+   - newCachedThreadPool()        → hilos bajo demanda (sin límite fijo)
+   - newScheduledThreadPool(n)    → como Timer pero con pool
+
+===========================================
+EXTRA (adicionales recomendados):
+   - volatile: visibilidad de variables entre hilos sin bloquear
+   - AtomicInteger / AtomicLong: operaciones atómicas sin synchronized
+   - ReentrantLock: alternativa explícita a synchronized con más control
+   - BlockingQueue (LinkedBlockingQueue): Productor-Consumidor sin wait/notify manual
+   - CompletableFuture (Java 8+): composición de tareas asíncronas

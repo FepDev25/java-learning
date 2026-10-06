@@ -1,0 +1,76 @@
+ORDEN - P12_RECURSIVIDAD
+===========================================
+
+Estructura de un método recursivo:
+   public static T metodo(params) {
+       if (casoBase)   return valorBase;   // ← OBLIGATORIO, sin esto → StackOverflowError
+       return operacion(metodo(subproblema));  // ← llamada con problema MÁS pequeño
+   }
+
+Stack de llamadas: cada invocación crea un frame en el call stack.
+La JVM tiene límite (~10.000 por defecto). Para n grandes → iteración o tail recursion.
+
+─────────────────────────────────────────
+
+1. recursividad/EjemploBasico.java          ← Algoritmos clásicos
+   ┌─────────────────┬─────────────────────────────────────────────┐
+   │ factorial(n)    │ n! = n * (n-1)!      base: n<=1 → 1        │
+   │ fibonacci(n)    │ fib(n-1)+fib(n-2)    bases: 0→0, 1→1       │
+   │ sumaArray(arr,i)│ arr[i]+suma(i+1)     base: i==length → 0   │
+   │ potencia(b,e)   │ b * potencia(b,e-1)  base: e==0 → 1        │
+   │ esPalindromo(s) │ compara extremos      base: len<=1 → true   │
+   │ contarDigitos(n)│ 1 + contar(n/10)      base: n<10 → 1        │
+   └─────────────────┴─────────────────────────────────────────────┘
+
+   Complejidad:
+   - factorial, sumaArray, potencia, contarDigitos → O(n) tiempo, O(n) espacio (stack)
+   - fibonacci (naive recursivo)                  → O(2^n) tiempo ← ineficiente para n>40
+     Solución: memoización (Map<Integer,Long>) o programación dinámica (iterativo)
+
+2. modelo/Nodo.java                         ← Árbol genérico (patrón Composite)
+   - Un Nodo puede ser hoja (sin hijos) o rama (con hijos)
+   - addHijo(Nodo) retorna this → encadenamiento fluido
+   - tieneHijos() → boolean
+   - nivel: calculado en la recursión (no en el constructor)
+
+3. recursividad/EjemploArbolRecursivo.java   ← Recorrido de árbol (pre-order)
+   Árbol de carpetas del repo de Felipe.
+
+   Forma 1 — Recursión CLÁSICA:
+   ┌──────────────────────────────────────────────────────────────┐
+   │  imprimirArbol(nodo, nivel) {                                 │
+   │      imprimir(nodo)                   ← procesar ANTES       │
+   │      for (hijo : nodo.getHijos())                            │
+   │          imprimirArbol(hijo, nivel+1) ← llamada recursiva    │
+   │  }                                                           │
+   │  Caso base implícito: si sin hijos, el for no itera.         │
+   └──────────────────────────────────────────────────────────────┘
+
+   Forma 2 — Recursión JAVA 8 (Stream):
+   ┌──────────────────────────────────────────────────────────────┐
+   │  Stream<Nodo> nodoStream(nodo, nivel) {                       │
+   │      return Stream.concat(                                    │
+   │          Stream.of(nodo),              ← nodo actual         │
+   │          nodo.getHijos().stream()                            │
+   │              .flatMap(h -> nodoStream(h, nivel+1))  ← hijos  │
+   │      );                                                      │
+   │  }                                                           │
+   │  Ventaja: lazy, componible con filter/map/limit sobre el árbol│
+   └──────────────────────────────────────────────────────────────┘
+
+===========================================
+CUÁNDO usar recursividad vs iteración:
+   Recursivo  → árboles, grafos, divide y vencerás, backtracking, problemas con estructura auto-similar
+   Iterativo  → loops simples, sumatorias, cuando n puede ser muy grande (stack overflow risk)
+   Ambos equivalentes → toda recursión puede convertirse en iteración con una pila explícita
+
+EXTRA recomendado:
+   - Memoización de fibonacci:
+       Map<Integer, Long> cache = new HashMap<>();
+       if (cache.containsKey(n)) return cache.get(n);
+       long r = fibonacci(n-1) + fibonacci(n-2);
+       cache.put(n, r);
+       return r;
+   - Búsqueda binaria recursiva: O(log n) en arrays ordenados
+   - Torres de Hanoi: clásico de 3 casos recursivos
+   - Backtracking: generar permutaciones, resolver sudoku

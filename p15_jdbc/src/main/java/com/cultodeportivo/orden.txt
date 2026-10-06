@@ -1,0 +1,149 @@
+ORDEN - P15_JDBC
+===========================================
+
+JDBC (Java Database Connectivity) — API estándar de Java para acceder a bases de datos.
+
+Flujo general:
+  1. Obtener Connection  (DriverManager o pool HikariCP)
+  2. Crear Statement o PreparedStatement
+  3. Ejecutar query (executeQuery → ResultSet / executeUpdate → int)
+  4. Leer ResultSet
+  5. Cerrar todo (try-with-resources)
+
+INFRAESTRUCTURA:
+  Puerto 5435 (5432-5434 ocupados en el sistema).
+  docker compose up -d     → levanta PostgreSQL en localhost:5435
+  docker compose down -v   → detiene y borra volumen
+  docker compose logs -f   → ver logs del contenedor
+  docker compose ps        → ver estado y healthcheck
+
+─────────────────────────────────────────
+
+SETUP (ejecutar una vez):
+  1. cd p15_jdbc
+  2. docker compose up -d
+  3. (esperar ~10s para que healthcheck pase)
+  4. mvn dependency:resolve   ← descarga driver PostgreSQL + HikariCP
+
+─────────────────────────────────────────
+
+1. config/Conexion.java                     ← Conexión básica con DriverManager
+
+   URL: jdbc:postgresql://localhost:5435/notas_db
+   Credenciales: usuario=felipe, password=ecuador2024
+
+   DriverManager.getConnection(url, user, pass)  → Connection
+   Cada llamada abre una nueva conexión TCP (lento para muchas peticiones).
+   Usar para scripts, CLIs o ejemplos simples.
+
+2. config/ConexionPool.java                 ← Pool HikariCP (producción)
+
+   HikariCP: el pool más rápido y usado en Java / Spring Boot.
+   Una sola instancia por app (Singleton estático).
+   Reutiliza conexiones → drásticamente más rápido bajo carga.
+
+   ┌────────────────────────┬────────────────────────────────────────┐
+   │ maximumPoolSize        │ máx. conexiones activas (default 10)   │
+   │ minimumIdle            │ conexiones en espera mínimas           │
+   │ connectionTimeout      │ ms esperando conexión libre del pool   │
+   │ idleTimeout            │ ms antes de cerrar una idle            │
+   │ maxLifetime            │ ms de vida máxima de una conexión      │
+   └────────────────────────┴────────────────────────────────────────┘
+
+─────────────────────────────────────────
+
+3. jdbc/EjemploConexion.java               ← Verificar conexión + metadatos
+
+   Ejecutar PRIMERO.
+   Verifica DriverManager + Pool + conteo de tablas.
+
+4. jdbc/EjemploCRUD.java                   ← Statement + ResultSet
+
+   Statement — SQL sin parámetros. Solo para queries internas sin input externo.
+   NUNCA concatenar input de usuario → SQL Injection.
+
+   executeQuery(sql)   → ResultSet (SELECT)
+   executeUpdate(sql)  → int filas afectadas (INSERT/UPDATE/DELETE)
+   RETURNING id        → PostgreSQL devuelve el ID generado en el SELECT
+
+   ResultSet:
+     rs.next()           → avanza; true si hay fila
+     rs.getString("col") → por nombre (legible)
+     rs.getInt(1)        → por índice (1-based)
+   ResultSetMetaData:
+     getColumnCount() / getColumnName(i) / getColumnTypeName(i)
+
+5. jdbc/EjemploPreparedStatement.java      ← PreparedStatement (SIEMPRE usar esto)
+
+   PreparedStatement:
+   ┌──────────────────────┬──────────────────────────────────────────┐
+   │ ?                    │ marcador de posición (1-based)           │
+   │ setString(1, val)    │ parámetro de texto                       │
+   │ setInt(2, val)       │ parámetro numérico                       │
+   │ setDouble(3, val)    │ parámetro decimal                        │
+   │ setArray(1, arr)     │ parámetro array (PostgreSQL: createArrayOf)│
+   │ executeQuery()       │ SELECT → ResultSet                       │
+   │ executeUpdate()      │ INSERT/UPDATE/DELETE → int               │
+   │ RETURN_GENERATED_KEYS│ opción para obtener ids generados        │
+   │ getGeneratedKeys()   │ ResultSet con los ids                    │
+   └──────────────────────┴──────────────────────────────────────────┘
+
+   Un PreparedStatement compilado puede reutilizarse con distintos parámetros.
+
+6. jdbc/EjemploTransacciones.java          ← Transacciones + Savepoints
+
+   conn.setAutoCommit(false)    ← inicio explícito
+   conn.commit()                ← confirmar todos los cambios
+   conn.rollback()              ← deshacer todos los cambios
+   conn.setSavepoint("name")    ← punto de restauración parcial
+   conn.rollback(savepoint)     ← deshacer solo hasta el savepoint
+
+   ACID:
+     A — Atomicidad:  todo o nada
+     C — Consistencia: constraints siempre válidas
+     I — Aislamiento: transacciones concurrentes aisladas
+     D — Durabilidad: commit sobrevive a caídas
+
+7. jdbc/EjemploBatch.java                  ← Operaciones en lote
+
+   addBatch()      → acumula sin ejecutar
+   executeBatch()  → envía todo en un viaje → mucho más rápido
+   clearBatch()    → limpiar el lote acumulado
+   BatchUpdateException → excepción si falla alguna sentencia del batch
+
+   Patrón recomendado para producción: commit cada N filas para controlar memoria.
+
+─────────────────────────────────────────
+
+8. dao/EstudianteDao.java                  ← Interfaz DAO
+   dao/EstudianteDaoJdbc.java              ← Implementación JDBC
+   dao/EjemploDAO.java                     ← Demo del patrón completo
+
+   DAO (Data Access Object):
+   - Interfaz define el contrato (buscar, guardar, actualizar, eliminar)
+   - La lógica SQL queda encapsulada en la implementación JDBC
+   - La capa de negocio depende de la interfaz → DIP (SOLID)
+   - Para tests: sustituir por implementación en memoria sin tocar el negocio
+
+   mapearFila(ResultSet) → Estudiante   ← helper privado evita repetición
+
+===========================================
+RESUMEN: Jerarquía de abstracciones
+
+  App / EjemploDAO
+      ↓ habla con
+  EstudianteDao (interfaz)
+      ↓ implementada por
+  EstudianteDaoJdbc
+      ↓ usa
+  ConexionPool (HikariCP)
+      ↓ conecta a
+  PostgreSQL (Docker :5435)
+
+===========================================
+EXTRA (no cubierto, recomendado):
+  JPA / Hibernate  → ORM: mapeo objeto-relacional automático (no SQL manual)
+  Spring Data JPA  → repositorios automáticos (save, findById, findAll)
+  jOOQ             → SQL type-safe generado desde el esquema
+  Flyway / Liquibase → migraciones de esquema versionadas
+  JDBC Template    → Spring: simplifica PreparedStatement sin ORM completo
