@@ -1,6 +1,0 @@
-com/velocity/exchange/Order.class
-com/velocity/exchange/OrderType.class
-com/velocity/exchange/OrderBook.class
-com/concurrency/master/Main.class
-com/velocity/exchange/MatchingEngine.class
-com/velocity/exchange/Trade.class
