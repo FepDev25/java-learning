@@ -44,6 +44,8 @@ public class EjemploStreamFilter {
                 .filter(e -> e.getApellido().equals("Torres"))
                 .findFirst();
         primero.ifPresent(e -> System.out.println("Primer Torres: " + e));
+        var buscado = primero.orElseThrow();
+        System.out.println("Buscado: " + buscado);
 
         // anyMatch / allMatch / noneMatch
         boolean hayEcuatorianos = lista.stream().anyMatch(e -> e.getPais().equals("Ecuador"));

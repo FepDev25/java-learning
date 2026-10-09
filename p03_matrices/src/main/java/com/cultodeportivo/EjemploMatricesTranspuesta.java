@@ -10,12 +10,8 @@ public class EjemploMatricesTranspuesta {
         };
 
         System.out.println("Matriz original");
-        for (int[] matriz1 : matriz) {
-            for (int j = 0; j < matriz1.length; j++) {
-                System.out.print(matriz1[j] + "\t");
-            }
-            System.out.println();
-        }
+        imprimir(matriz);
+
         int aux;
         for(int i = 1; i < matriz.length; i++){
             for(int j = 0; j < i; j++){
@@ -26,6 +22,10 @@ public class EjemploMatricesTranspuesta {
         }
 
         System.out.println("Matriz transpuesta");
+        imprimir(matriz);
+    }
+
+    private static void imprimir(int[][] matriz) {
         for (int[] matriz1 : matriz) {
             for (int j = 0; j < matriz1.length; j++) {
                 System.out.print(matriz1[j] + "\t");

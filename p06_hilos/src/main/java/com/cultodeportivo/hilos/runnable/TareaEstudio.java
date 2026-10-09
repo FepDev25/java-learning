@@ -9,7 +9,6 @@ public class TareaEstudio implements Runnable {
         this.materia = materia;
     }
 
-    @SuppressWarnings("BusyWait")
     @Override
     public void run() {
         System.out.println("INICIO Felipe estudia: " + materia + " | hilo: " + Thread.currentThread().getName());

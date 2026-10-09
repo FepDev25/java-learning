@@ -15,7 +15,7 @@ public class EjemploDuration {
 
         // --- Duration entre dos LocalDateTime ---
         LocalDateTime ahora  = LocalDateTime.now();
-        LocalDateTime entrega = LocalDateTime.of(2025, Month.JUNE, 30, 23, 59, 0);
+        LocalDateTime entrega = LocalDateTime.of(2027, Month.JUNE, 30, 23, 59, 0);
 
         Duration tiempoParaEntrega = Duration.between(ahora, entrega);
 

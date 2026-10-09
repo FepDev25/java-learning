@@ -17,7 +17,7 @@ public class ColaApuntes {
             }
         }
         this.apunte = tema;
-        System.out.println("✍  Felipe escribió apunte: " + apunte);
+        System.out.println("E -> Felipe escribió apunte: " + apunte);
         this.disponible = true;
         notify(); // avisa al Lector
     }
@@ -31,7 +31,7 @@ public class ColaApuntes {
                 Thread.currentThread().interrupt();
             }
         }
-        System.out.println("📚 Felipe lee apunte:    " + apunte);
+        System.out.println("L -> Felipe lee apunte:    " + apunte);
         this.disponible = false;
         notify(); // avisa al Escritor
         return apunte;

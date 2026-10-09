@@ -38,7 +38,8 @@ public class EjemploStreamCollectors {
         Map<String, Double> promedios = estudiantes.stream()
                 .collect(Collectors.toMap(
                         e -> e.getNombre() + " " + e.getApellido(),
-                        Estudiante::getPromedio));
+                        Estudiante::getPromedio)
+                );
         promedios.forEach((nombre, prom) ->
                 System.out.printf("  %-20s → %.2f%n", nombre, prom));
 
@@ -56,7 +57,12 @@ public class EjemploStreamCollectors {
 
         // groupingBy + counting: cuántos estudiantes por país
         Map<String, Long> cantPorPais = estudiantes.stream()
-                .collect(Collectors.groupingBy(Estudiante::getPais, Collectors.counting()));
+                .collect(
+                        Collectors.groupingBy(
+                                Estudiante::getPais,
+                                Collectors.counting()
+                        )
+                );
         cantPorPais.forEach((pais, cant) ->
                 System.out.println(pais + ": " + cant + " estudiante(s)"));
 

@@ -1,7 +1,7 @@
 package com.cultodeportivo.p02_paquetes.hogar;
 
 public class Persona {
-    private  String nombre;
+    private String nombre;
     private String apellido;
     private ColorPelo colorPelo;
 

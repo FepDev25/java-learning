@@ -8,7 +8,6 @@ public class TareaFelipe extends Thread {
     }
 
     // El método run() es el punto de entrada del hilo
-    @SuppressWarnings("BusyWait") // para warning por el sleep
     @Override
     public void run() {
         System.out.println("INICIO Hilo: " + getName());

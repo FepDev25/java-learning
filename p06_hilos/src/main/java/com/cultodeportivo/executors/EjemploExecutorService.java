@@ -27,8 +27,8 @@ public class EjemploExecutorService {
         executor.shutdown();
 
         System.out.println("Main continúa mientras se descargan apuntes...");
-        boolean terminó = executor.awaitTermination(2, TimeUnit.SECONDS);
-        System.out.println("¿Terminó dentro de 2s? " + terminó);
+        boolean termino = executor.awaitTermination(3, TimeUnit.SECONDS);
+        System.out.println("¿Terminó dentro de 3s? " + termino);
         System.out.println("Main finaliza.");
     }
 }

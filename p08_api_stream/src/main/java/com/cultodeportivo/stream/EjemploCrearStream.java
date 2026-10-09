@@ -13,13 +13,15 @@ public class EjemploCrearStream {
 
         // Forma 1: Stream.of(...)
         Stream<String> materias = Stream.of("Algoritmos", "Redes", "BD", "SO", "IA");
-        materias.forEach(System.out::println);
+        materias.map(String::toUpperCase)
+                .forEach(System.out::println);
 
         System.out.println("---");
 
         // Forma 2: Arrays.stream(array)
         String[] arr = {"Quito", "Guayaquil", "Cuenca"};
-        Arrays.stream(arr).forEach(System.out::println);
+        Arrays.stream(arr).map(String::toUpperCase)
+                .forEach(System.out::println);
 
         System.out.println("---");
 
@@ -30,12 +32,14 @@ public class EjemploCrearStream {
                 .add("Ecuador")
                 .add("CS Student")
                 .build();
-        construido.forEach(System.out::println);
+        construido.map(String::toUpperCase)
+                .forEach(System.out::println);
 
         System.out.println("---");
 
         // Forma 4 (más común): collection.stream()
         List<String> lista = List.of("Cálculo", "Programación", "Inglés", "Física");
-        lista.stream().forEach(System.out::println);
+        lista.stream().map(String::toUpperCase)
+                .forEach(System.out::println);
     }
 }

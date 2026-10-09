@@ -3,6 +3,10 @@
 Documentación técnica del curso de Java, organizada por módulos. Cada módulo es un
 proyecto Maven independiente dentro del repositorio `Udemy_Master_Java`.
 
+Las [explicaciones de los capítulos 1 al 15](./explicaciones/README.md) desarrollan
+los conceptos mediante fragmentos de código integrados, trazas, resultados y
+límites de las implementaciones, con contexto para interpretar cada ejemplo.
+
 ## Índice de Módulos
 
 | Módulo | Tema | Documento |

@@ -17,12 +17,12 @@ public class EjemploLocalDate {
         LocalDate hoy = LocalDate.now();
         System.out.println("Hoy:              " + hoy);
 
-        // Felipe nació el 15 de julio de 2003
-        LocalDate nacimientoFelipe = LocalDate.of(2003, Month.JULY, 15);
+        // Felipe nació
+        LocalDate nacimientoFelipe = LocalDate.of(2005, Month.JANUARY, 25);
         System.out.println("Nacimiento:       " + nacimientoFelipe);
 
         // Inicio de universidad: 2022-03-01
-        LocalDate inicioUniversidad = LocalDate.parse("2022-03-01");
+        LocalDate inicioUniversidad = LocalDate.parse("2022-08-01");
         System.out.println("Inicio univ.:     " + inicioUniversidad);
 
         // --- Extraer campos ---

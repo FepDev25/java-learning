@@ -1,4 +1,5 @@
-ORDEN - P15_JDBC
+
+RDEN - P15_JDBC
 ===========================================
 
 JDBC (Java Database Connectivity) — API estándar de Java para acceder a bases de datos.

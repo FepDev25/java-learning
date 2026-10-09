@@ -14,8 +14,8 @@ public enum TipoAutomovil {
 
     // Atributos de la enumeracion TipoAutomovil
     private final String nombre;
-    private final int numeroPuerta;
     private final String descripcion;
+    private final int numeroPuerta;
 
     // Constructor de la enumeracion TipoAutomovil
     TipoAutomovil(String nombre, String descripcion, int numeroPuerta) {

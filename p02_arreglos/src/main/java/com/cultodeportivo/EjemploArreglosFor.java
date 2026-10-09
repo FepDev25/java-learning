@@ -16,7 +16,6 @@ public class EjemploArreglosFor {
         productos[5] = "Chromecast 4ta generación";
         productos[6] = "Bicicleta Oxford";
 
-        Arrays.sort(productos);
         System.out.println("=== Usando for ===");
         for(int i = 0; i < total; i++){
             System.out.println("para indice " + i + " : " + productos[i]);

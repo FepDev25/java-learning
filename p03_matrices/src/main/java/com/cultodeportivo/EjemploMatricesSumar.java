@@ -12,7 +12,7 @@ public class EjemploMatricesSumar {
                 {40,50,60},
                 {70,80,90}
         };
-        int[][] suma = new int[3][3];
+        int[][] suma = new int[a.length][a[0].length];
 
         for(int i = 0; i < a.length; i++){
             for(int j = 0; j < a[i].length; j++){
